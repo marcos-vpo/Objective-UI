@@ -1,0 +1,243 @@
+import { UIView } from "./UIView";
+import { Widget } from "./Widget";
+import { IBindable } from "./IBindable";
+import { WidgetBinder } from "./WidgetBinder";
+import { WidgetBinderBehavior } from "./WidgetBinderBehavior";
+import { AppStorage } from "./AppStorage";
+import { Misc } from "./Misc";
+import { DefaultExceptionPage } from "./DefaultExceptionPage";
+
+/**
+ * An efficient system of data binding and object synchronization (aka 'ViewModel') 
+ * with the User Interface
+ * 
+ */
+
+export class BindingContext<ViewModel>
+{
+   public getViewModelInstance(): any
+    {
+        return this.viewModelInstance
+    }
+    public toString(): string
+    {
+        return '[BINDING-CONTEXT]';
+    }
+
+    private _binders: Array<WidgetBinder> = [];
+    private viewModelInstance: ViewModel;
+
+    /**
+     * This is a concrete class and you should instantiate it normally,
+     * You must provide an instance of the ViewModel and the inherited UIView currently displayed. 
+     * But ATTENTION you must do this INSIDE the onViewDidload() function of your UIView inherited class.
+     * 
+     * ```
+     *  export class MyView extends UIView { 
+     *     private binding: BindingContext<ModelType>; 
+     *     ... 
+     *     onViewDidload(): void { 
+     *        //Here Widgets attached in UIView will be linked with `ModelType`
+     *        this.binding = new BindingContext<ModelType>(new ModelType(), this); 
+     *        ...
+     *     }
+     * ```
+     * @param viewModel An instance of the ViewModel object
+     * @param view UIView instance inherits class (the currently displayed UIView)
+     */
+    constructor(viewModel: ViewModel, view: UIView)
+    {
+        this.viewModelInstance = viewModel;
+        this.scanViewModel(view);
+    }
+
+    /**
+     * 
+     * @param modelPropertyName 
+     * @param validateFn 
+     ```
+        function(propVal: any) {
+            // check value
+            // apply UI changes
+            // return true|false;
+        }
+     ```
+     */
+    public hasValidation(modelPropertyName: string, validateFn: Function)
+    {
+        const binder = this.getBinder(modelPropertyName);
+        if (Misc.isNull(binder))
+            throw new DefaultExceptionPage(new Error(`BindingContext<${typeof (this.viewModelInstance)}> : not found a WidgetBinder for model property '${modelPropertyName}'`));
+
+        binder.addValidation(validateFn);
+    }
+
+    private getBinder(modelPropertyName: string): WidgetBinder
+    {
+        for (var i = 0; i < this._binders.length; i++)
+        {
+            var binder: WidgetBinder = this._binders[i];
+            if (binder.modelPropertyName == modelPropertyName)
+                return binder;
+        }
+    }
+
+    /**
+     * Gets a WidgetBinderBehavior from which the behavior of data bindings will be changed.
+     * @param modelPropertyName The name of the property/key present in the ViewModelType type
+     * @returns `WidgetBinderBehavior`
+     */
+    public getBindingFor(modelPropertyName: string): WidgetBinderBehavior
+    {
+        var propBinders: Array<WidgetBinder> = [];
+        for (var i = 0; i < this._binders.length; i++)
+        {
+            var binder: WidgetBinder = this._binders[i];
+            if (binder.modelPropertyName == modelPropertyName)
+                propBinders.push(binder);
+        }
+        return new WidgetBinderBehavior(propBinders);
+    }
+
+    /**
+     * Causes a UI refresh on all Widgets managed by this Data Binding Context
+     * based on the current values of the properties/keys of the ViewModelType instance \
+     * \
+     * (remember that the ViewModelType instance is managed by this context as well)
+     */
+    public refreshAll(): void
+    {
+        for (var b = 0; b < this._binders.length; b++)
+        {
+            var binder: WidgetBinder = this._binders[b];
+            binder.refreshUI();
+        }
+    }
+
+
+    /**
+     * Causes a UI refresh on a single Widget managed by this Data Binding Context
+     * based on the current values of the properties/keys of the ViewModelType instance \
+     * \
+     * (remember that the ViewModelType instance is managed by this context as well)
+     */
+    public refreshSingle(name: string): void
+    {
+        for (var b = 0; b < this._binders.length; b++)
+        {
+            var binder: WidgetBinder = this._binders[b];
+            if (binder.modelPropertyName == name)
+                binder.refreshUI();
+        }
+    }
+
+    /**
+     * Causes a UI refresh on a these Widget's managed by this Data Binding Context
+     * based on the current values of the properties/keys of the ViewModelType instance \
+     * \
+     * (remember that the ViewModelType instance is managed by this context as well)
+     */
+    public refreshThese(...names: string[]): void
+    {
+        for (var b = 0; b < this._binders.length; b++)
+        {
+            var binder: WidgetBinder = this._binders[b];
+            for (var i = 0; i < names.length; i++)
+            {
+                if (binder.modelPropertyName == names[i])
+                    binder.refreshUI();
+            }
+
+        }
+    }
+
+    /**
+     * Get an instance of `ViewModel` based on Widgets values
+     * @returns `ViewModel`
+     */
+    public getViewModel<ViewModel>(callValidations: boolean = true): ViewModel
+    {
+        for (var i = 0; i < this._binders.length; i++)
+        {
+            const binder = this._binders[i]
+            binder.fillPropertyModel();
+           
+            if (callValidations)
+            {
+                if (binder.hasValidation())
+                    if (!binder.validate())
+                        return null;
+            }
+
+
+        }
+        return this.viewModelInstance as unknown as ViewModel;
+    }
+
+    /**
+     * Defines an instance of `ViewModel`.\
+     * This causes an immediate UI refresh on all widgets managed by this context. \
+     * \
+     * You can also use this to reset (say 'clear') the Widgets state by passing a `new ViewModel()`
+     * @param viewModelInstance `ViewModel` 
+     * @returns 
+     */
+
+    public setViewModel(viewModelInstance: ViewModel, updateUI: boolean = true): BindingContext<ViewModel>
+    {
+        this.viewModelInstance = viewModelInstance;
+
+        if (updateUI)
+        {
+            const $ = this
+            for (var b = 0; b < this._binders.length; b++)
+            {
+                var binder: WidgetBinder = this._binders[b];
+                binder.setModel($, binder.modelPropertyName);
+            }
+            this.refreshAll();
+        }
+        return this;
+    }
+
+    /**
+     * Scans the Widgets managed in a UIView for matches with 
+     * properties/keys present in the ViewModel type object 
+     * managed by this Context
+     */
+    private scanViewModel(view: UIView): void
+    {
+        var self = this;
+        var widgets: Array<Widget> = view.managedWidgets();
+        if (widgets == null || widgets == undefined || widgets.length == 0)
+            throw new Error("Illegal declaration: BindingContext cannot be initialized by the View's constructor. Consider instantiating it in onViewDidLoad()");
+
+        for (var key in self.viewModelInstance)
+        {
+            for (var w = 0; w < widgets.length; w++)
+            {
+                var widget: Widget = widgets[w];
+                var keyMatch: boolean = widget.widgetName == key
+                if (keyMatch)
+                    this.bindWidget(widget, key);
+            }
+        }
+    }
+
+    private bindWidget(widget: Widget, modelKey: string): WidgetBinder
+    {
+        try
+        {
+            var binder: WidgetBinder = (widget as unknown as IBindable).getBinder();
+            if (binder == null || binder == undefined)
+                return null;
+            
+            binder.setModel(this, modelKey);
+            this._binders.push(binder);
+            return binder;
+        } catch
+        {
+            return null;
+        }
+    }
+}

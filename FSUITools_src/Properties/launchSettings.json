@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "FSUITools": {
+      "commandName": "Project",
+      "commandLineArgs": "-build",
+      "workingDirectory": "C:\\Users\\marco\\OneDrive\\Documentos\\Visual Studio 2022\\Projects\\sacfiscal_io\\SACFiscao.IO\\"
+    }
+  }
+}
