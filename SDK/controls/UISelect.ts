@@ -109,8 +109,9 @@ export class UISelect extends Widget implements IBindable
             if (!Misc.isNull($.onSelectionChanged))
                 $.onSelectionChanged($.value(), $)
         };
-        this.title.textContent = this.initialTitle;
 
+        if (Misc.isNullOrEmpty(this.initialTitle)) this.title.remove()
+        else this.title.textContent = this.initialTitle;
     }
 
     /**

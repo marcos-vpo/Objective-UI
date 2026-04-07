@@ -182,15 +182,15 @@ ${contentGroup}
     }
 
 
-    private initialTitle: string = null;
-    private initialPlaceHolder: string = null;
-    private initialText: string = null;
-    private initialType: string = null;
-    private initialMaxlength: number = null;
-    private initialMask: string = null;
-    private containerClass: string = null;
-    private required: boolean = false;
-    private initialSymbol: string = null
+    public initialTitle: string = null;
+    public initialPlaceHolder: string = null;
+    public initialText: string = null;
+    public initialType: string = null;
+    public initialMaxlength: number = null;
+    public initialMask: string = null;
+    public containerClass: string = null;
+    public required: boolean = false;
+    public initialSymbol: string = null
 
     public lbTitle: HTMLLabelElement = null;
     public txInput: HTMLInputElement = null;
@@ -202,7 +202,7 @@ ${contentGroup}
         type = 'text',
         title = '',
         maxlength = 100,
-        placeHolder = '',
+        placeholder = '',
         text = '',
         mask = '',
         containerClass = 'form-group',
@@ -220,7 +220,7 @@ ${contentGroup}
         mask?: string,
         maxlength?: number,
         title?: string;
-        placeHolder?: string;
+        placeholder?: string;
         text?: string;
         containerClass?: string
         isRequired?: boolean
@@ -239,7 +239,7 @@ ${contentGroup}
         this.required = isRequired;
         this.initialType = (Misc.isNullOrEmpty(type) ? 'text' : type);
         this.initialTitle = (Misc.isNullOrEmpty(title) ? '' : title);
-        this.initialPlaceHolder = (Misc.isNullOrEmpty(placeHolder) ? '' : placeHolder);
+        this.initialPlaceHolder = (Misc.isNullOrEmpty(placeholder) ? '' : placeholder);
         this.initialText = (Misc.isNullOrEmpty(text) ? '' : text);
         this.initialMaxlength = (Misc.isNullOrEmpty(maxlength) ? 100 : maxlength);
         this.initialMask = (Misc.isNull(mask) ? '' : mask);

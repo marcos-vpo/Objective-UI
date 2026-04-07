@@ -96,6 +96,13 @@ export class FlatDataGridItem implements IDataGridItemTemplate
     /**  define o um trecho html para ser usado pela funcão itemTemplate()*/
     public withHTML(htmlString: string): FlatDataGridItem
     {
+        if (htmlString.indexOf('<table') == -1)
+            htmlString = `
+<table>
+    <tbody>
+        ${htmlString}
+    </tbody>
+</table>`
         this.html_template = htmlString;
         return this;
     }

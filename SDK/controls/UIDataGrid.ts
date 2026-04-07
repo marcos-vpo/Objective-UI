@@ -6,6 +6,11 @@ import { DataGridItem } from "./DataGridItem";
 import { IDataGridItemTemplate } from "./IDataGridItemTemplate";
 import { IDataGridItemTemplateProvider } from "./IDataGridItemTemplateProvider";
 import { Misc } from "../Misc";
+import { DefaultExceptionPage } from "../DefaultExceptionPage";
+import { FlatListItem } from "../FlatListItem";
+import { FlatList } from "../FlatList";
+import { FlatDataGrid, FlatDataGridItem } from "../FlatDataGrid";
+import { UIList } from "./UIList";
 
 export class DataGridColumnDefinition
 {
@@ -66,37 +71,42 @@ export class UIDataGrid extends Widget implements IBindable
 
     public MODEL_KEYS: Array<string> = [];
 
-    private baseTemplate: string = null;
 
 
     private tableCssClasses: string = 'table table-hover table-bordered table-sm';
-    constructor({ name, autoGenCols = false, baseTemplate = null, cssClasses = null }: {
+    private columnsCsv: string;
+    private customTemplateFunction: Function | ((item: FlatDataGridItem) => void)
+    constructor({ name, autoGenCols = false, columnsCsv = null, cssClasses = null, customTemplateFunction = null }: {
         name: string,
         autoGenCols?: boolean,
+        columnsCsv?: string,
         itemTemplateProvider?: IDataGridItemTemplateProvider,
         baseTemplate?: string,
-        cssClasses?: string
+        cssClasses?: string,
+        customTemplateFunction?: string | ((item: FlatDataGridItem) => void)
     })
     {
         super(name);
         this.autoGenerateColumns = autoGenCols;
-        this.baseTemplate = baseTemplate;
         if (!Misc.isNullOrEmpty(cssClasses))
             this.tableCssClasses = cssClasses;
+
+        this.columnsCsv = columnsCsv;
+
+        if (Misc.isNullOrEmpty(customTemplateFunction) == false)
+        {
+            if (typeof customTemplateFunction === 'string')
+            {
+                this.customTemplateFunction = new Function('item', customTemplateFunction);
+            }
+            else
+                this.customTemplateFunction = customTemplateFunction as Function;
+        }
     }
 
 
     protected htmlTemplate(): string
     {
-        if (!Misc.isNullOrEmpty(this.baseTemplate))
-        {
-            if (this.baseTemplate.indexOf('gridHeader') == -1)
-                throw new Error(`UIDataGrid '${this.widgetName}' failed to load: custom base-template does not contains an <div/> with Id="gridHeader".`)
-            if (this.baseTemplate.indexOf('gridBody') == -1)
-                throw new Error(`UIDataGrid '${this.widgetName}' failed to load: custom base-template does not contains an <div/> with Id="gridBody".`)
-
-            return this.baseTemplate;
-        }
         return `
 <table id="fsDataGrid" class="${this.tableCssClasses}">
   <thead id="gridHeader">
@@ -113,6 +123,28 @@ export class UIDataGrid extends Widget implements IBindable
         this.table.style.background = 'white';
         this.tableHeader = this.elementById('gridHeader');
         this.tableBody = this.elementById('gridBody');
+
+        if (this.autoGenerateColumns == false)
+        {
+            if (Misc.isNullOrEmpty(this.columnsCsv))
+                return
+            const cdf: DataGridColumnDefinition[] = []
+            const csv = this.columnsCsv.split(',');
+            for (let i = 0; i < csv.length; i++)
+            {
+                const c = csv[i].split(':');
+                cdf.push({ h: c[0], k: c[1] });
+            }
+            this.addColumns(cdf);
+        }
+
+        if (Misc.isNull(this.customTemplateFunction) == false)
+        {
+            this.setTemplateProvider(new FlatDataGrid((item: FlatDataGridItem) =>
+            {
+                this.customTemplateFunction(item);
+            }));
+        }
     }
 
 
@@ -250,12 +282,17 @@ export class UIDataGrid extends Widget implements IBindable
                 this.items[i].unSelect();
 
         item.select();
+
+        if (Misc.isNull(this.fnOnRowClick) == false)
+            this.fnOnRowClick(item);
     }
 
-    public setCustomPresenter(presenter: ICustomWidgetPresenter<Widget>): void
+    private fnOnRowClick: (item: IDataGridItemTemplate) => void = null;
+    public setOnItemClick(fn: (item: IDataGridItemTemplate) => void)
     {
-        presenter.render(this);
+        this.fnOnRowClick = fn;
     }
+
     public value(): string
     {
         return this.selectedValue();

@@ -7,19 +7,31 @@ export class ModalAction
     public classes: string[] = [];
     public onClick?: Function;
     public dismis: boolean;
+    icon: string;
+    iconWidth: string;
+    iconHeight: string;
+    iconRight: boolean;
 
-    constructor({ buttonText, dataDismiss = false, buttonClasses = 'btn btn-light', buttonClick = null }:
+    constructor({ buttonText, dataDismiss = false, buttonClasses = 'btn btn-light', icon = null, iconRight = false, iconWidth = null, iconHeight = null, buttonClick = null }:
         {
             buttonText: string;
             dataDismiss?: boolean;
             buttonClick?: Function;
             buttonClasses?: string;
+            icon?: string;
+            iconRight?: boolean;
+            iconWidth?: string;
+            iconHeight?: string;
         })
     {
         this.text = buttonText;
 
         this.onClick = buttonClick;
         this.dismis = dataDismiss;
+        this.icon = icon;
+        this.iconWidth = iconWidth;
+        this.iconHeight = iconHeight;
+        this.iconRight = iconRight;
 
         const classesStr = buttonClasses.split(' ');
         for (var c = 0; c < classesStr.length; c++)

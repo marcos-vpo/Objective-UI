@@ -66,9 +66,9 @@
 ../controls/ListItem.ts
 ../controls/UITemplateView.ts
 ../controls/UIDataGrid.ts
-../controls/PieChart.ts
-../controls/LineChart.ts
-../controls/BarChart.ts
+../controls/UIPieChart.ts
+../controls/UILineChart.ts
+../controls/UIBarChart.ts
 ../yord-api/DivContent.ts
 ../yord-api/IYordLayout.ts
 ../yord-api/YordManagedView.ts

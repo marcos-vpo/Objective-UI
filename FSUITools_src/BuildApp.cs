@@ -61,7 +61,9 @@ namespace ObjUITools
             {
                 if (!string.IsNullOrEmpty(file.DirectoryName))
                     if (file.DirectoryName.Contains("lib") || file.DirectoryName.Contains("asset"))
+                    {
                         continue;
+                    }
 
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
@@ -75,11 +77,6 @@ namespace ObjUITools
                 {
 
                     string line = lines[i];
-
-                    if (file.Name == "ViewChamado.js" && line.Contains("HelpdeskHome"))
-                    {
-
-                    }
 
                     if (i == 0) continue;
 
@@ -126,13 +123,13 @@ namespace ObjUITools
 
         private void BuildInternal()
         {
-            StringBuilder importFiles = new StringBuilder();
+            StringBuilder importFiles = new StringBuilder(); 
             foreach (AppBuildJsFile jsFile in appFiles)
             {
                 if (jsFile.IsJs)
                     importFiles.AppendLine(jsFile.BuildFile().Trim());
                 else
-                    jsFile.BuildFile();
+                    jsFile.BuildFile(); 
             }
 
             DirectoryInfo di = new DirectoryInfo(Program.PROJECT_DIR);

@@ -4,7 +4,7 @@ import { Misc } from "../Misc";
 import { VirtualFunction } from "../VirtualFunction";
 import { Widget } from "../Widget";
 
-export class PieChart extends Widget
+export class UIPieChart extends Widget
 {
 
     private entryId: string;

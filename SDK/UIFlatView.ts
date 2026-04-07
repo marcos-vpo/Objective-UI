@@ -62,12 +62,13 @@ export abstract class UIFlatView extends UIView
         try
         {
             view.builder = view.buildView();
+            view.builder.layoutPath = view.builder.layoutPath.trim();
         } catch (e: Error | any)
         {
             throw new DefaultExceptionPage(new Error(`${view.constructor.name}.buildView(): Failed to build view: ${e?.message}`));
         }
-
-        const isRawHtml = view.builder.layoutHtml.indexOf('<title>Error</title>') > -1
+        
+        const isRawHtml = view.builder.layoutPath.startsWith('<') 
         const cached = isRawHtml ? null : (view.builder.dictionaryEnabled ? null : this.findCached(view.builder.layoutPath));
         if (!Misc.isNull(cached))
         {
@@ -108,6 +109,16 @@ export abstract class UIFlatView extends UIView
                     if (!isRawHtml)
                         UIFlatView.caches.push(new ViewCache(view.builder.layoutPath, html))
             });
+    }
+
+    protected onUnLoad(): void { }
+
+    public override onViewDidUnLoad(): void
+    {
+        try
+        {
+            this.onUnLoad()
+        } catch { }
     }
 
     /**
@@ -154,6 +165,11 @@ export abstract class UIFlatView extends UIView
 
     private builder: ViewBuilder;
     private binding: BindingContext<any | object>;
+
+    public isDataBindingEnabled()
+    {
+        return Misc.isNull(this.binding) == false
+    }
 
     /**
      * Must be implemented to return a ViewBuilder that configures the layout path, 
@@ -211,7 +227,7 @@ export abstract class UIFlatView extends UIView
      * Retrieves the current View Model data from the binding context.
      * @param callValidations Whether to run validation rules before returning the model.
      */
-    protected getViewModel<TViewModel>(callValidations: boolean = true): TViewModel
+    public getViewModel<TViewModel>(callValidations: boolean = true): TViewModel
     {
         return this.binding.getViewModel<TViewModel>(callValidations);
     }
@@ -221,7 +237,7 @@ export abstract class UIFlatView extends UIView
      * @param instance The new model data.
      * @param updateUI If true, automatically updates widget values.
      */
-    protected setViewModel<TViewModel>(instance: TViewModel, updateUI: boolean = true): void
+    public setViewModel<TViewModel>(instance: TViewModel, updateUI: boolean = true): void
     {
         this.binding.setViewModel(instance, updateUI);
     }

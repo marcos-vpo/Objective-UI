@@ -13,11 +13,15 @@ export class UIDialogBS5 extends UIDialog
 
     const tmpl = `
 <div id="UIModalView" class="modal" tabindex="-1" >
-  <div class="modal-dialog modal-dialog-scrollable ${modalClass}">
+  <div id="modalContainerChild" class="modal-dialog modal-dialog-scrollable ${modalClass}">
     <div id="modalContent" class="modal-content shadow-lg" ${Misc.isNullOrEmpty(height) ? '' : `style="height:${height}"`}>
       <div class="modal-header">
-        <h5   id="modalTitle" class="modal-title">Modal title</h5>
+        <h5   id="modalTitle" class="modal-title flex-fill">Modal title</h5>
+        <div id="customTopActions" class="d-flex flex-row justify-content-end">
+          
+        </div>
         <button id="btnClose" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
       </div>
       <div id="modalBody" class="modal-body pt-1" style="background:white">
 

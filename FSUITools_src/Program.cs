@@ -57,10 +57,11 @@ namespace ObjUITools
 "   -build       : compile typescript (tsc); refact .js files; make index.html",
 "   -clear       : delete only your .js code files; keep lib files;",
 "   -sw          : generate Service Worker .js file with all app references",
-"   -mon         : starts Monitor for watch changes in .ts files then auto-build"
+"   -mon         : starts Monitor for watch changes in .ts files then auto-build",
+"   -hint        : generates a hint file for CodeMirror use"
                     };
 
-                    foreach(string tx in helpTxt)
+                    foreach (string tx in helpTxt)
                     {
                         string[] parts = tx.Split(":");
                         Console.ForegroundColor = ConsoleColor.Green;
@@ -72,7 +73,7 @@ namespace ObjUITools
 
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.Write("\nCMD > ");
-             
+
                     string line = Console.ReadLine();
                     if (!string.IsNullOrEmpty(line))
                     {
@@ -107,12 +108,12 @@ namespace ObjUITools
 
 
                 bool listTemplates = args.Any(a => a.StartsWith("-lt"));
-                if(listTemplates)
+                if (listTemplates)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     string selfExePath = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName;
                     string templatesPath = Path.Combine(selfExePath, "project-templates");
-                    foreach(FileInfo f in new DirectoryInfo(templatesPath).GetFiles())
+                    foreach (FileInfo f in new DirectoryInfo(templatesPath).GetFiles())
                     {
                         Console.WriteLine($"  {f.Name}");
                     }
@@ -183,6 +184,8 @@ $@"*** Objective-UI Build Tools {TOOLS_VERSION} ***
                     if (args.Any(a => a.Equals("-build")))
                         BuildApp.Build();
                     PrintDone();
+
+                     
                 }
 
                 bool genSw = args.Any(a => a.StartsWith("-sw"));

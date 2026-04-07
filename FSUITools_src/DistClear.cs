@@ -29,6 +29,8 @@ namespace ObjUITools
                     .FirstOrDefault(d =>
                         distFolders.Contains(d.Name)
                     );
+  
+
             if (distDi == null)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;

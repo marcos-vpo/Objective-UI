@@ -11,7 +11,9 @@ namespace ObjUITools
     internal class AppBuildJsFile
     {
         private readonly DirectoryInfo rootDir;
-        private readonly FileInfo jsFile;
+        public readonly FileInfo jsFile;
+
+
 
         private List<IAppBuildAction> fileActions;
 

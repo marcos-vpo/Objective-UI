@@ -17,11 +17,14 @@ export class UIDialog extends Widget implements INotifiable
     private showFunction: VirtualFunction;
 
     public contentTemplate: UITemplateView;
+    private modalTopActions: ModalAction[] = [];
     private modalActions: ModalAction[] = [];
     private titleText: string;
 
+    private sizeableContainer:HTMLDivElement
     public modalContainer: HTMLDivElement;
     public titleElement: HTMLHeadElement;
+    public modalTopActionsContainer: HTMLDivElement;
     public bodyContainer: HTMLDivElement;
     public footerContainer: HTMLDivElement;
     public btnClose: HTMLButtonElement;
@@ -75,7 +78,7 @@ export class UIDialog extends Widget implements INotifiable
 
     public closeDialog()
     {
-       const x = new VirtualFunction({
+        const x = new VirtualFunction({
             fnName: 'closeModal',
             fnArgNames: ['container'],
             fnContent: `
@@ -93,6 +96,12 @@ export class UIDialog extends Widget implements INotifiable
 
         }
         UIDialog.$ = null;
+    }
+
+    public actionTop(modalTopAction: ModalAction): UIDialog
+    {
+        this.modalTopActions.push(modalTopAction);
+        return this;
     }
 
     public action(action: ModalAction): UIDialog
@@ -154,9 +163,12 @@ export class UIDialog extends Widget implements INotifiable
     <div class="modal-dialog" role="document">        
         <div id="modalContent" class="modal-content shadow-lg" ${styleHeight}>
             <div class="modal-header">
-                <h5 id="modalTitle" class="modal-title">Modal title</h5>
+                <h5 id="modalTitle" class="modal-title flex-fill">Modal title</h5>
+                <div id="customTopActions" class="d-flex flex-row justify-content-end">
+          
+                </div>
                 <button id="btnClose" type="button" class="close" ${this.dataDismissAttrName}="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">&#128470;</span>
                 </button>
             </div>
             
@@ -173,6 +185,18 @@ export class UIDialog extends Widget implements INotifiable
 
     }
 
+    private sizeOptions: string[] = ['modal-sm', 'modal-md', 'modal-lg', 'modal-xl', 'modal-fullscreen'];
+    public resize(modalClass: string)
+    {
+       this.sizeableContainer.classList.remove(...this.sizeOptions)
+       this.sizeableContainer.classList.add(modalClass)
+    }
+
+    /**
+     * Set the height of the modal content.
+     * @param height - the desired height of the modal content.
+     * @returns - this UIDialog instance.
+     */
     public setHeight(height: string): UIDialog
     {
         this.height = height
@@ -185,9 +209,11 @@ export class UIDialog extends Widget implements INotifiable
     {
         var self = this;
 
+        self.sizeableContainer = self.elementById(parseFloat(PageShell.BOOTSTRAP_VERSION) > 5 ? 'modalContainerChild' : 'UIModalView')
         self.modalContainer = self.elementById('UIModalView');
         self.modalContent = self.elementById('modalContent')
         self.titleElement = self.elementById('modalTitle');
+        self.modalTopActions = self.elementById('customTopActions');
         self.bodyContainer = self.elementById('modalBody');
         self.footerContainer = self.elementById('modalFooter');
         self.btnClose = self.elementById('btnClose');
@@ -196,13 +222,77 @@ export class UIDialog extends Widget implements INotifiable
         if (!Misc.isNullOrEmpty(self.contentTemplate))
             self.bodyContainer.appendChild(self.contentTemplate.content());
 
+        for (var i = 0; i < self.modalTopActions.length; i++)
+        {
+            const action: ModalAction = self.modalTopActions[i];
+            const btn: HTMLButtonElement = self.shell.createElement('button');
+            btn.type = 'button';
+            btn.id = `modalAction_${Misc.generateUUID()}`;
+
+            if (Misc.isNullOrEmpty(action.icon))
+                btn.textContent = action.text;
+            else
+            {
+                const img = self.shell.createElement('img')
+                img.src = action.icon;
+                img.style.width = action.iconWidth
+                img.style.height = action.iconHeight
+
+                const spnText = self.shell.createElement('span')
+                spnText.textContent = action.text
+
+                if (action.iconRight)
+                {
+                    btn.appendChild(spnText);
+                    btn.appendChild(img);
+                }
+                else
+                {
+                    btn.appendChild(img);
+                    btn.appendChild(spnText);
+                }
+            }
+
+            for (var c = 0; c < action.classes.length; c++)
+                btn.classList.add(action.classes[c]);
+
+            action.setButton(btn, this);
+            if (action.dismis)
+                btn.setAttribute(`${this.dataDismissAttrName}`, 'modal');
+
+            self.modalTopActionsContainer.appendChild(btn);
+        }
+
         for (var i = 0; i < self.modalActions.length; i++)
         {
             const action: ModalAction = self.modalActions[i];
             const btn: HTMLButtonElement = self.shell.createElement('button');
             btn.type = 'button';
             btn.id = `modalAction_${Misc.generateUUID()}`;
-            btn.textContent = action.text;
+
+            if (Misc.isNullOrEmpty(action.icon))
+                btn.textContent = action.text;
+            else
+            {
+                const img = self.shell.createElement('img')
+                img.src = action.icon;
+                img.style.width = action.iconWidth
+                img.style.height = action.iconHeight
+
+                const spnText = self.shell.createElement('span')
+                spnText.textContent = action.text
+
+                if (action.iconRight)
+                {
+                    btn.appendChild(spnText);
+                    btn.appendChild(img);
+                }
+                else
+                {
+                    btn.appendChild(img);
+                    btn.appendChild(spnText);
+                }
+            }
 
             for (var c = 0; c < action.classes.length; c++)
                 btn.classList.add(action.classes[c]);
@@ -242,20 +332,16 @@ export class UIDialog extends Widget implements INotifiable
         UIDialog.$ = this;
     }
 
-    public setOnCloseFn(onClose: Function)
+    public setOnCloseFn(onClose: Function): UIDialog
     {
         this.onCloseFn = onClose;
         this.btnClose.onclick = () => onClose
+        return this
     }
 
     onNotified(sender: any, args: Array<any>): void
     {
         if (Misc.isNull(this.onComplete) == false)
             this.onComplete(this);
-    }
-
-    public setCustomPresenter(renderer: ICustomWidgetPresenter<Widget>): void
-    {
-        renderer.render(this);
     }
 }
