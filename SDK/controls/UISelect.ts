@@ -2,10 +2,10 @@ import { DefaultExceptionPage } from "../DefaultExceptionPage";
 import { Widget } from "../Widget";
 import { IBindable } from "../IBindable";
 import { ICustomWidgetPresenter } from "../ICustomWidgetPresenter";
-import { SelectOption } from "../SelectOption";
 import { WidgetBinder } from "../WidgetBinder";
 import { UIListBinder } from "./UIList";
 import { Misc } from "../Misc";
+import { SelectOption } from "../SelectOption";
 
 export class UISelectBinder extends WidgetBinder
 {
@@ -70,19 +70,24 @@ export class UISelect extends Widget implements IBindable
      * (value: any, select: UISelect) => { } 
      * ```
     */
-    constructor({ name, title, containerClass, selectionChangeFn }:
+    constructor({ name, title, containerClass, items = [], valueProperty, displayProperty }:
         {
             name: string,
             title: string,
             containerClass?: string,
-            selectionChangeFn?: Function
+            items?: Array<any | object>,
+            valueProperty?: string,
+            displayProperty?: string
         })
     {
         super(name);
         this.initialTitle = title;
         this.containerClass = containerClass;
-        this.onSelectionChanged = selectionChangeFn;
+        this.itemsSource = items;
+        this.valueProperty = valueProperty;
+        this.displayProperty = displayProperty;
     }
+
     getBinder(): WidgetBinder
     {
         return new UISelectBinder(this);
@@ -112,6 +117,9 @@ export class UISelect extends Widget implements IBindable
 
         if (Misc.isNullOrEmpty(this.initialTitle)) this.title.remove()
         else this.title.textContent = this.initialTitle;
+
+        if (this.itemsSource.length > 0)
+            this.fromList(this.itemsSource, this.valueProperty, this.displayProperty);
     }
 
     /**
@@ -169,8 +177,9 @@ export class UISelect extends Widget implements IBindable
         if (models == null || models == undefined) return;
         try
         {
-            this.valueProperty = valueProperty;
-            this.displayProperty = displayProperty;
+            if (Misc.isNullOrEmpty(valueProperty) == false) this.valueProperty = valueProperty;
+            if (Misc.isNullOrEmpty(displayProperty) == false) this.displayProperty = displayProperty;
+
             this.itemsSource = models;
             var optionsFromModels: Array<SelectOption> = [];
             for (var i = 0; i < models.length; i++)

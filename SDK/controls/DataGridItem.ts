@@ -49,7 +49,7 @@ export class DataGridItem implements IDataGridItemTemplate
 
         var model = self.value;
         var tr = self.pageShell.createElement('tr')
-        
+
         for (var k = 0; k < this.ownerDatagrid.MODEL_KEYS.length; k++)
         {
             var key = this.ownerDatagrid.MODEL_KEYS[k];
@@ -62,6 +62,11 @@ export class DataGridItem implements IDataGridItemTemplate
         {
             self.ownerDatagrid.onRowClick(self);
         };
+
+        tr.ondblclick = function (ev)
+        {
+            self.ownerDatagrid.onRowDoubleClick(self);
+        }
 
         self.rowElement = tr;
         return tr;

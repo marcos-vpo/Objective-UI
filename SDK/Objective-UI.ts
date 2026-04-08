@@ -13,7 +13,7 @@
  */
 export abstract class UIPage
 {
-    public static readonly PRODUCT_VERSION: string = '1.0.79'
+    public static readonly PRODUCT_VERSION: string = '1.0.80'
     public static DISABLE_EXCEPTION_PAGE: boolean = false;
     protected mainShell: PageShell;
     public static shell: PageShell;
@@ -6365,19 +6365,24 @@ export class UISelect extends Widget implements IBindable
      * (value: any, select: UISelect) => { } 
      * ```
     */
-    constructor({ name, title, containerClass, selectionChangeFn }:
+    constructor({ name, title, containerClass, items = [], valueProperty, displayProperty }:
         {
             name: string,
             title: string,
             containerClass?: string,
-            selectionChangeFn?: Function
+            items?: Array<any | object>,
+            valueProperty?: string,
+            displayProperty?: string
         })
     {
         super(name);
         this.initialTitle = title;
         this.containerClass = containerClass;
-        this.onSelectionChanged = selectionChangeFn;
+        this.itemsSource = items;
+        this.valueProperty = valueProperty;
+        this.displayProperty = displayProperty;
     }
+
     getBinder(): WidgetBinder
     {
         return new UISelectBinder(this);
@@ -6404,8 +6409,12 @@ export class UISelect extends Widget implements IBindable
             if (!Misc.isNull($.onSelectionChanged))
                 $.onSelectionChanged($.value(), $)
         };
-        this.title.textContent = this.initialTitle;
 
+        if (Misc.isNullOrEmpty(this.initialTitle)) this.title.remove()
+        else this.title.textContent = this.initialTitle;
+
+        if (this.itemsSource.length > 0)
+            this.fromList(this.itemsSource, this.valueProperty, this.displayProperty);
     }
 
     /**
@@ -6463,8 +6472,9 @@ export class UISelect extends Widget implements IBindable
         if (models == null || models == undefined) return;
         try
         {
-            this.valueProperty = valueProperty;
-            this.displayProperty = displayProperty;
+            if (Misc.isNullOrEmpty(valueProperty) == false) this.valueProperty = valueProperty;
+            if (Misc.isNullOrEmpty(displayProperty) == false) this.displayProperty = displayProperty;
+
             this.itemsSource = models;
             var optionsFromModels: Array<SelectOption> = [];
             for (var i = 0; i < models.length; i++)
@@ -6917,15 +6927,15 @@ ${contentGroup}
     }
 
 
-    private initialTitle: string = null;
-    private initialPlaceHolder: string = null;
-    private initialText: string = null;
-    private initialType: string = null;
-    private initialMaxlength: number = null;
-    private initialMask: string = null;
-    private containerClass: string = null;
-    private required: boolean = false;
-    private initialSymbol: string = null
+    public initialTitle: string = null;
+    public initialPlaceHolder: string = null;
+    public initialText: string = null;
+    public initialType: string = null;
+    public initialMaxlength: number = null;
+    public initialMask: string = null;
+    public containerClass: string = null;
+    public required: boolean = false;
+    public initialSymbol: string = null
 
     public lbTitle: HTMLLabelElement = null;
     public txInput: HTMLInputElement = null;
@@ -7602,7 +7612,7 @@ export class DataGridItem implements IDataGridItemTemplate
 
         var model = self.value;
         var tr = self.pageShell.createElement('tr')
-        
+
         for (var k = 0; k < this.ownerDatagrid.MODEL_KEYS.length; k++)
         {
             var key = this.ownerDatagrid.MODEL_KEYS[k];
@@ -7615,6 +7625,11 @@ export class DataGridItem implements IDataGridItemTemplate
         {
             self.ownerDatagrid.onRowClick(self);
         };
+
+        tr.ondblclick = function (ev)
+        {
+            self.ownerDatagrid.onRowDoubleClick(self);
+        }
 
         self.rowElement = tr;
         return tr;
@@ -8103,7 +8118,7 @@ export class UIDataGrid extends Widget implements IBindable
 
         this.columnsCsv = columnsCsv;
 
-        if (Misc.isNull(customTemplateFunction) == false)
+        if (Misc.isNullOrEmpty(customTemplateFunction) == false)
         {
             if (typeof customTemplateFunction === 'string')
             {
@@ -8297,10 +8312,29 @@ export class UIDataGrid extends Widget implements IBindable
             this.fnOnRowClick(item);
     }
 
+
+    public onRowDoubleClick(item: IDataGridItemTemplate): void
+    {
+        for (var i = 0; i < this.items.length; i++)
+            if (this.items[i].isSelected())
+                this.items[i].unSelect();
+
+        item.select();
+
+        if (Misc.isNull(this.fnOnRowClick) == false)
+            this.fnOnRowDoubleClick(item);
+    }
+
     private fnOnRowClick: (item: IDataGridItemTemplate) => void = null;
+    private fnOnRowDoubleClick: (item: IDataGridItemTemplate) => void = null;
     public setOnItemClick(fn: (item: IDataGridItemTemplate) => void)
     {
         this.fnOnRowClick = fn;
+    }
+
+    public setOnItemDoubleClick(fn: (item: IDataGridItemTemplate) => void)
+    {
+        this.fnOnRowDoubleClick = fn;
     }
 
     public value(): string

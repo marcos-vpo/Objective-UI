@@ -287,10 +287,29 @@ export class UIDataGrid extends Widget implements IBindable
             this.fnOnRowClick(item);
     }
 
+
+    public onRowDoubleClick(item: IDataGridItemTemplate): void
+    {
+        for (var i = 0; i < this.items.length; i++)
+            if (this.items[i].isSelected())
+                this.items[i].unSelect();
+
+        item.select();
+
+        if (Misc.isNull(this.fnOnRowClick) == false)
+            this.fnOnRowDoubleClick(item);
+    }
+
     private fnOnRowClick: (item: IDataGridItemTemplate) => void = null;
+    private fnOnRowDoubleClick: (item: IDataGridItemTemplate) => void = null;
     public setOnItemClick(fn: (item: IDataGridItemTemplate) => void)
     {
         this.fnOnRowClick = fn;
+    }
+
+    public setOnItemDoubleClick(fn: (item: IDataGridItemTemplate) => void)
+    {
+        this.fnOnRowDoubleClick = fn;
     }
 
     public value(): string
