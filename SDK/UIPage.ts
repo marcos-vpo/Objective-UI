@@ -19,7 +19,7 @@ import { IAppStorageProvider } from "./IAppStorageProvider";
  */
 export abstract class UIPage
 {
-    public static readonly PRODUCT_VERSION: string = '1.0.80'
+    public static readonly PRODUCT_VERSION: string = '1.0.81'
     public static DISABLE_EXCEPTION_PAGE: boolean = false;
     protected mainShell: PageShell;
     public static shell: PageShell;
@@ -40,7 +40,7 @@ export abstract class UIPage
         this.mainShell.loadBSVersion()
         this.mainShell.loadjQueryVersion()
         console.info(`* * * Objective-UI v${UIPage.PRODUCT_VERSION} * * *`);
-        console.info(`*     Bootstrap v${PageShell.BOOTSTRAP_VERSION_NUMBER}   *`)
+        console.info(`*     Bootstrap v${PageShell.BOOTSTRAP_VERSION}   *`)
         console.info(`*     jQuery v${PageShell.JQUERY_VERSION}    *`)
     }
 

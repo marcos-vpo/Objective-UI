@@ -296,7 +296,7 @@ export class UIDataGrid extends Widget implements IBindable
 
         item.select();
 
-        if (Misc.isNull(this.fnOnRowClick) == false)
+        if (Misc.isNull(this.fnOnRowDoubleClick) == false)
             this.fnOnRowDoubleClick(item);
     }
 

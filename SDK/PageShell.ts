@@ -26,7 +26,7 @@ export class PageShell
         new VirtualFunction({
             fnName: 'getBSVersion',
             fnContent: `
-                if(PageShell.BOOTSTRAP_VERSION == ''){
+               
                     try
                     {
                         PageShell.BOOTSTRAP_VERSION = bootstrap.Tooltip.VERSION
@@ -34,7 +34,7 @@ export class PageShell
                     }catch(e){
                         console.error('bootstrap.Tooltip.VERSION not found: ' + e.message)
                     }
-                }`
+                `
         }).call()
     }
 
@@ -44,8 +44,7 @@ export class PageShell
         new VirtualFunction({
             fnName: 'getjQVersion',
             fnContent: `
-                if(PageShell.JQUERY_VERSION == '')
-                {
+                
                     try 
                     {
                         // 1. Tenta pegar pelo global 'jQuery' (mais seguro que '$')
@@ -68,7 +67,7 @@ export class PageShell
                         PageShell.JQUERY_VERSION = 'Erro';
                         console.error('Erro ao tentar ler versão do jQuery: ' + e.message);
                     }
-                }`
+                `
         }).call()
     }
 

@@ -19,7 +19,16 @@ namespace ObjUITools
             Console.ForegroundColor = ConsoleColor.White;
             string[] distFolders = Program.Key("VALID_DIST_PROJECT_FOLDERS").Split(';');
 
-            string tsconfigJson = File.ReadAllText(Path.Combine(projDir.FullName, "tsconfig.json"));
+            string tsc_root = Path.Combine(projDir.FullName, "tsconfig.json");
+            string tsc_src = Path.Combine(projDir.FullName, "src", "tsconfig.json");
+
+            string tsconfig_path = "";
+
+            if (File.Exists(tsc_root)) tsconfig_path = tsc_root;
+            else if (File.Exists(tsc_src)) tsconfig_path = tsc_src;
+            else throw new Exception($"'tsconfig.json' file not found");
+
+            string tsconfigJson = File.ReadAllText(tsconfig_path);
             TSConfig cfg = TSConfig.Get(tsconfigJson);
 
             string outDir = cfg.compilerOptions.outDir;
@@ -123,13 +132,13 @@ namespace ObjUITools
 
         private void BuildInternal()
         {
-            StringBuilder importFiles = new StringBuilder(); 
+            StringBuilder importFiles = new StringBuilder();
             foreach (AppBuildJsFile jsFile in appFiles)
             {
                 if (jsFile.IsJs)
                     importFiles.AppendLine(jsFile.BuildFile().Trim());
                 else
-                    jsFile.BuildFile(); 
+                    jsFile.BuildFile();
             }
 
             DirectoryInfo di = new DirectoryInfo(Program.PROJECT_DIR);

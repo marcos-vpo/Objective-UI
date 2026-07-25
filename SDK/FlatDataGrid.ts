@@ -165,6 +165,7 @@ export class FlatDataGridItem implements IDataGridItemTemplate
                 this.fn_handlers[i](templ);
 
             tableRow.onclick = () => this.ownerDataGrid.onRowClick(this);
+            tableRow.ondblclick = () => this.ownerDataGrid.onRowDoubleClick(this);
             return tableRow;
 
         }

@@ -317,8 +317,8 @@ export class UIDialog extends Widget implements INotifiable
             md.show();
             var refId = ('#' + containerId)
             $(refId).on('hidden.bs.modal', function (e) {
+                
                 document.getElementById(containerId).remove();
-                document.getElementById(showFunctionId).remove();
             })
         `).call(self.modalContainer.id, self.showFunction.functionId);
     }
